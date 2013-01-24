@@ -1,7 +1,11 @@
-import java.io.{FileInputStream, File}
-import com.sun.image.codec.jpeg.{JPEGCodec, JPEGImageDecoder}
-import com.sun.media.jai.codec.FileSeekableStream
-import javax.media.jai.{JAI, RenderedOp}
+// import java.io.{FileInputStream, File}
+// import com.sun.image.codec.jpeg.{JPEGCodec, JPEGImageDecoder}
+// import com.sun.media.jai.codecimpl.{JPEGCodec, JPEGImageDecoder}
+// import com.sun.media.jai.codec.FileSeekableStream
+// import javax.media.jai.{JAI, RenderedOp}
+import java.io.File
+import javax.imageio.ImageIO
+import java.awt.image.BufferedImage
 
 case class Resolution (width: Int, height: Int) {
   val aspectRatio = width.toDouble / height.toDouble
@@ -72,8 +76,9 @@ object WallpaperSorter {
 
           //  find the resolution of that image
           val res = try {
-            val stream = new FileSeekableStream(file)
-                      val image = JAI.create("stream", stream);
+            // val stream = new FileSeekableStream(file)
+            //           val image = JAI.create("stream", stream);
+            val image = ImageIO.read(file)
             val height = image.getHeight
             val width = image.getWidth
             Some(Resolution(width, height))
