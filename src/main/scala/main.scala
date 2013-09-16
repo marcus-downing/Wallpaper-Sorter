@@ -6,8 +6,9 @@
 import java.io.File
 import javax.imageio.ImageIO
 import java.awt.image.BufferedImage
+import scala.Console
 
-case class Resolution (width: Int, height: Int) {
+case class Resolution (md5: String, width: Int, height: Int) {
   val aspectRatio = width.toDouble / height.toDouble
 }
 
@@ -22,8 +23,8 @@ case class AspectRatio (val x: Int, val y: Int, annotation: String = "") {
 }
 
 object WallpaperSorter {
-  val source = "/home/mdowning/Dropbox/Wallpapers/to sort"
-  val destination = "/home/mdowning/Dropbox/Wallpapers/sorted"
+  val source = "/home/marcus/Dropbox/Wallpapers/to sort"
+  val destination = "/home/marcus/Dropbox/Wallpapers/sorted"
 
   val aspectRatios =
         AspectRatio(9,21) ::
@@ -63,6 +64,7 @@ object WallpaperSorter {
     def processFiles (current: File, path: List[String], destFolder: File) {
       // println("Scanning " + current.getAbsolutePath)
 
+      val md = java.security.MessageDigest.getInstance("MD5")
       val files = current.listFiles
       if (files == null)
         return
@@ -81,7 +83,21 @@ object WallpaperSorter {
             val image = ImageIO.read(file)
             val height = image.getHeight
             val width = image.getWidth
-            Some(Resolution(width, height))
+            val md5 = {
+              val fis = new java.io.FileInputStream(file)
+              try {
+                val dis = new java.security.DigestInputStream(fis, md)
+                while(dis.available > 0) dis.read()
+              } finally { fis.close() }
+              val digest = md.digest()
+
+              val sb = new StringBuffer()
+              for (byte <- digest)
+                sb.append(Integer.toHexString(0xff & byte))
+              sb.toString();
+            }
+
+            Some(Resolution(md5, width, height))
           } catch {
             case e => e.printStackTrace
           }
@@ -93,13 +109,15 @@ object WallpaperSorter {
               val destFolder2Loc = destFolder.getAbsolutePath + "/" + aspectRatio.name + "/" + path.reverse.mkString("/")
               val destFolder2 = new File(destFolder2Loc)
               if (!destFolder2.exists) {
-                println("Creating folder: " + destFolder2Loc) 
+                println(Console.GREEN+"Creating folder: " + destFolder2Loc) 
                 destFolder2.mkdirs
               }
 
-              val pathLoc = (name :: path).reverse.mkString("/")
+              val newname = r.md5.substring(0,10)+" ("+r.width+" x "+r.height+")."+extension
+              val pathLoc = (newname :: path).reverse.mkString("/")
+              //val pathLoc = (name :: path).reverse.mkString("/")
               val destLoc = destFolder.getAbsolutePath + "/" + aspectRatio.name + "/" + pathLoc
-              println("Moving file: " + file.getAbsolutePath + "  to "+ destLoc)
+              println(Console.RESET+"Moving file: "+file.getAbsolutePath+" to "+Console.BOLD+destLoc)
               
               val destFile = new File(destLoc)
               file.renameTo(destFile)
@@ -109,7 +127,7 @@ object WallpaperSorter {
         }
       }
       if (current.list.length == 0 && path.length > 0) {
-        println("Removing folder: " + current.getAbsolutePath)
+        println(Console.RED+"Removing folder: " + current.getAbsolutePath)
         current.delete
       }
     }
