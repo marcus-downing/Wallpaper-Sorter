@@ -23,8 +23,8 @@ case class AspectRatio (val x: Int, val y: Int, annotation: String = "") {
 }
 
 object WallpaperSorter {
-  val source = "/home/marcus/Dropbox/Wallpapers/to sort"
-  val destination = "/home/marcus/Dropbox/Wallpapers/sorted"
+  val source = "/home/mdowning/Dropbox/Wallpapers/to sort"
+  val destination = "/home/mdowning/Dropbox/Wallpapers/sorted"
 
   val aspectRatios =
         AspectRatio(9,21) ::
